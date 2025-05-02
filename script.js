@@ -1,23 +1,23 @@
 let audioContext = null;
 let whiteNoiseSource = null;
 let isPlaying = false;
-const sampleRate = 44100;
-const bufferSize = 2 * sampleRate; // 2 seconds of white noise
+const sampleRate = 6942; // nice number! lower pitched, less harsh white noise.
+const bufferSize = 600 * sampleRate; // with the original samplerate this would be 10 minutes, considerably more now
 
 document.getElementById('toggleNoise').addEventListener('click', togglePlayback);
 
-// Refined togglePlayback logic using suspend/resume
+// turns noise on and off upon pressing the button
 function togglePlayback() {
     const button = document.getElementById('toggleNoise');
 
     if (!audioContext) {
-        // Create context and source on the first click
+      // most browsers won't play audio on a page if the user hasn't made an input, so we need to do this
+      // blame the obnoxious pages of the early 2000s for making it that way, lmao
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const noiseBuffer = audioContext.createBuffer(1, bufferSize, sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
-        }
+            output[i] = Math.random() * 2 - 1; // grabs random numbers to turn into frequencies
         whiteNoiseSource = audioContext.createBufferSource();
         whiteNoiseSource.buffer = noiseBuffer;
         whiteNoiseSource.loop = true;
@@ -27,9 +27,7 @@ function togglePlayback() {
     }
 
     if (isPlaying) {
-        // If currently playing, suspend the context
-        // Using suspend/resume for consistent state management with potential future features,
-        // but the visibilitychange listener that would trigger automatic suspension is removed.
+        // still using suspend n resume here for consistency and minimal variables, it was coded to stop upon exiting the tab. It no longer does this.
         audioContext.suspend().then(() => {
             button.textContent = 'Start Noise';
             isPlaying = false;
